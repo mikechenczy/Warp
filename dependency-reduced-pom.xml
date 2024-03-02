@@ -28,7 +28,7 @@
               </filters>
               <transformers>
                 <transformer>
-                  <mainClass>com.mj.nat.Main</mainClass>
+                  <mainClass>com.mj.warp.ws.Main</mainClass>
                 </transformer>
               </transformers>
             </configuration>

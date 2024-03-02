@@ -1,7 +1,7 @@
-package com.mj.nat.client;
+package com.mj.warp.ws.client;
 
-import com.mj.nat.MyHandshaker;
-import com.mj.nat.Utils;
+import com.mj.warp.ws.MyHandshaker;
+import com.mj.warp.ws.Utils;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;

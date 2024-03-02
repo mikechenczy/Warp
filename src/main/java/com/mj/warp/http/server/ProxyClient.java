@@ -1,12 +1,12 @@
-package com.mj.nat.server;
+package com.mj.warp.http.server;
 
-import com.mj.nat.Utils;
+import com.mj.warp.http.Utils;
+import com.mj.warp.http.server.controller.ProxyController;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,15 +17,11 @@ import java.util.List;
  * @apiNote
  */
 public class ProxyClient extends Thread {
-    public ChannelHandlerContext ctxOrigin;
+    public long uniqueId;
     public ChannelHandlerContext ctx;
     public boolean closed;
-    public ProxyClient(ChannelHandlerContext ctx) {
-        this.ctxOrigin = ctx;
-    }
-    public ProxyClient connect() {
-        start();
-        return this;
+    public ProxyClient(long uniqueId) {
+        this.uniqueId = uniqueId;
     }
 
     public List<byte[]> byteBufList = new ArrayList<>();
@@ -50,9 +46,7 @@ public class ProxyClient extends Thread {
     }
 
     public void sendBack(byte[] msg) {
-        if(ClientHandler.ctxList.containsKey(ctxOrigin)) {
-            ctxOrigin.writeAndFlush(new BinaryWebSocketFrame(Utils.bytes2ByteBuf(msg)));
-        }
+
     }
 
     @Override
@@ -82,7 +76,6 @@ public class ProxyClient extends Thread {
         if(ctx!=null) {
             ctx.close();
         }
-        ClientHandler.ctxList.remove(ctxOrigin);
-        ctxOrigin.close();
+        ProxyController.map.remove(uniqueId);
     }
 }

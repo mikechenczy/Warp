@@ -1,6 +1,6 @@
-package com.mj.nat.server;
+package com.mj.warp.http.server;
 
-import com.mj.nat.Utils;
+import com.mj.warp.http.Utils;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -19,6 +19,7 @@ public class ProxyHandler extends SimpleChannelInboundHandler<ByteBuf> {
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         proxyClient.ctx = ctx;
+        proxyClient.flush();
     }
 
     @Override

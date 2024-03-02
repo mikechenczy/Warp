@@ -1,9 +1,9 @@
-package com.mj.nat.server;
+package com.mj.warp.ws.client;
 
-import com.mj.nat.Utils;
+import com.mj.warp.ws.Utils;
+import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
-import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -13,21 +13,21 @@ import java.util.Map;
  * @date 2023/9/8
  * @apiNote
  */
-public class ClientHandler extends SimpleChannelInboundHandler<BinaryWebSocketFrame> {
-    public static Map<ChannelHandlerContext, ProxyClient> ctxList = new HashMap<>();
+public class ClientHandler extends SimpleChannelInboundHandler<ByteBuf> {
+    public static Map<ChannelHandlerContext, WebSocketClient> ctxList = new HashMap<>();
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        ctxList.put(ctx, new ProxyClient(ctx).connect());
+        ctxList.put(ctx, new WebSocketClient(ctx).connect());
     }
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, BinaryWebSocketFrame msg) throws Exception {
-        //System.out.println(msg);
+    protected void channelRead0(ChannelHandlerContext ctx, ByteBuf byteBuf) throws Exception {
+        //System.out.println(byteBuf);
         if(!ctxList.containsKey(ctx)) {
             ctx.close();
         }
-        ctxList.get(ctx).send(Utils.byteBuf2Bytes(msg.content()));
+        ctxList.get(ctx).send(Utils.byteBuf2Bytes(byteBuf));
     }
 
     @Override

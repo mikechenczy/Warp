@@ -1,6 +1,6 @@
-package com.mj.nat.client;
+package com.mj.warp.http.client;
 
-import com.mj.nat.Utils;
+import com.mj.warp.http.Utils;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -14,11 +14,11 @@ import java.util.Map;
  * @apiNote
  */
 public class ClientHandler extends SimpleChannelInboundHandler<ByteBuf> {
-    public static Map<ChannelHandlerContext, WebSocketClient> ctxList = new HashMap<>();
+    public static Map<ChannelHandlerContext, HttpClient> ctxList = new HashMap<>();
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        ctxList.put(ctx, new WebSocketClient(ctx).connect());
+        ctxList.put(ctx, new HttpClient(ctx).connect());
     }
 
     @Override

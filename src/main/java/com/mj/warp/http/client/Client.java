@@ -1,4 +1,4 @@
-package com.mj.nat.client;
+package com.mj.warp.http.client;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
@@ -14,21 +14,17 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 public class Client {
     public static String url = "ws://localhost:11451/ws";
     public static int serverPort;
-    public static String host;
     public static void main(String[] args) {
-        if(args!=null) {
-            if(args.length>=1)
-                url = args[0];
-            try {
-                if(args.length>=2)
-                    serverPort = Integer.parseInt(args[1]);
-            } catch (Exception e) {
-                e.printStackTrace();
-                return;
-            }
-            if(args.length>=3)
-                host = args[2];
+        if(args.length>=1)
+            url = args[0];
+        try {
+            if(args.length>=2)
+                serverPort = Integer.parseInt(args[1]);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return;
         }
+        url = url.endsWith("/")?url:(url+"/");
         EventLoopGroup bossGroup = new NioEventLoopGroup();
         EventLoopGroup workerGroup = new NioEventLoopGroup();
         ChannelFuture channelFuture = null;
