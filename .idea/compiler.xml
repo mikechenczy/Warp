@@ -16,7 +16,7 @@
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
-      <module name="Warp" options="-parameters" />
+      <module name="Warp" options="-parameters -verbose -bootclasspath &quot;D:/Program Files/Java/jdk1.8.0_181/jre/lib/rt.jar;D:/Program Files/Java/jdk1.8.0_181/jre/lib/jce.jar&quot; -extdirs E:\Program\Warp/lib" />
       <module name="nat" options="-parameters" />
       <module name="warp" options="-parameters" />
     </option>
