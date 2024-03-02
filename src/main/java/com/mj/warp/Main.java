@@ -13,6 +13,8 @@ public class Main {
     //SAMPLE:
     //java -jar x.jar http server 127.0.0.1 3389 8080
     //java -jar x.jar http client "http://server:8080/" 8081
+    //java -jar x.jar ws server 127.0.0.1 3389 8080
+    //java -jar x.jar ws client "ws://server:8080/ws" 8081
     public static void main(String[] args) {
         List<String> argList = new ArrayList<>(Arrays.asList(args));
         if(argList.size()==0)
