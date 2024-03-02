@@ -18,7 +18,7 @@ import io.netty.handler.stream.ChunkedWriteHandler;
 public class Server {
     public static String ip = "127.0.0.1";
     public static int port = 3389;
-    public static int serverPort;
+    public static int serverPort = 8080;
     public static void main(String[] args) {
         if(args!=null) {
             if(args.length>=1)

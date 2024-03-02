@@ -16,7 +16,7 @@ import java.util.List;
 public class Server {
     public static String ip = "127.0.0.1";
     public static int port = 3389;
-    public static int serverPort;
+    public static int serverPort = 8080;
     public static void main(String[] args) {
         if(args.length>=1)
             ip = args[0];

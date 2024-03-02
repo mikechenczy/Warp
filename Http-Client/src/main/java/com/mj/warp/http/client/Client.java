@@ -12,8 +12,8 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
  * @apiNote
  */
 public class Client {
-    public static String url = "ws://localhost:11451/ws";
-    public static int serverPort;
+    public static String url = "http://127.0.0.1:8080/";
+    public static int serverPort = 8081;
     public static void main(String[] args) {
         if(args.length>=1)
             url = args[0];
