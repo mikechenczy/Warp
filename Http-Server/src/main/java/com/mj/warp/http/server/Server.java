@@ -25,6 +25,8 @@ public class Server {
                 port = Integer.parseInt(args[1]);
             if(args.length>=3)
                 serverPort = Integer.parseInt(args[2]);
+            if(args.length>=4)
+                serverPort = Integer.parseInt(args[3]);
         } catch (Exception e) {
             e.printStackTrace();
             return;

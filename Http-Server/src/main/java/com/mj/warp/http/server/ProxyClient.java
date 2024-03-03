@@ -1,5 +1,6 @@
 package com.mj.warp.http.server;
 
+import com.alibaba.fastjson.JSONObject;
 import com.mj.warp.http.Utils;
 import com.mj.warp.http.server.controller.ProxyController;
 import io.netty.bootstrap.Bootstrap;
@@ -7,8 +8,13 @@ import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import jakarta.servlet.http.HttpServletResponse;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -45,8 +51,40 @@ public class ProxyClient extends Thread {
         }
     }
 
-    public void sendBack(byte[] msg) {
+    public final List<Byte> sendBackDump = new ArrayList<>();
 
+    public void sendBack(byte[] msg) {
+        synchronized (sendBackDump) {
+            Byte[] bytes = new Byte[msg.length];
+            for (int i = 0; i < msg.length; i++) {
+                bytes[i] = msg[i];
+            }
+            Collections.addAll(sendBackDump, bytes);
+        }
+    }
+
+    public long index = 0;
+
+    public String getNeedToSend() {
+        if(sendBackDump.size()==0)
+            return "{}";
+        synchronized (sendBackDump) {
+            Byte[] msg = sendBackDump.toArray(new Byte[]{});
+            byte[] bytes = new byte[msg.length];
+            for (int i = 0; i < msg.length; i++) {
+                bytes[i] = msg[i];
+            }
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("index", index++);
+            jsonObject.put("bytes", bytes);
+            sendBackDump.clear();
+            return jsonObject.toJSONString();
+        }
+    }
+
+    private void write(HttpServletResponse response, byte[] bytes) throws IOException {
+        response.getOutputStream().write(bytes);
+        response.getOutputStream().flush();
     }
 
     @Override

@@ -12,8 +12,11 @@ import io.netty.handler.codec.http.HttpClientCodec;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketClientHandshaker;
+import io.netty.handler.proxy.HttpProxyHandler;
+import io.netty.handler.proxy.Socks5ProxyHandler;
 import io.netty.util.concurrent.GenericFutureListener;
 
+import java.net.InetSocketAddress;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
@@ -69,13 +72,15 @@ public class WebSocketClient extends Thread {
             bootstrap.group(client);
             bootstrap.option(ChannelOption.SO_KEEPALIVE, true);
             bootstrap.option(ChannelOption.TCP_NODELAY, true);
-            bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 3000);
+            bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 10000);
             bootstrap.channel(NioSocketChannel.class);
             final WebSocketClientHandler[] handler = {new WebSocketClientHandler(this)};
             bootstrap.handler(new ChannelInitializer<SocketChannel>() {
                 @Override
                 protected void initChannel(SocketChannel channel) {
                     ChannelPipeline pipeline = channel.pipeline();
+                    //TODO add proxy support
+                    //pipeline.addFirst("httpCLientProxy", new HttpProxyHandler(new InetSocketAddress("127.0.0.1", 54377)));
                     pipeline.addLast(new HttpClientCodec(), new HttpObjectAggregator(2155380*10));
                     //pipeline.addLast("frameDecoder", new LengthFieldBasedFrameDecoder(2155380*10, 0, 4, 0, 4));
                     pipeline.addLast("handler", handler[0]);

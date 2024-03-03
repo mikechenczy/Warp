@@ -14,6 +14,8 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 public class Client {
     public static String url = "http://127.0.0.1:8080/";
     public static int serverPort = 8081;
+    public static int processingCount = 5;
+
     public static void main(String[] args) {
         if(args.length>=1)
             url = args[0];

@@ -1,13 +1,20 @@
 package com.mj.warp.http.client;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.*;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.util.EntityUtils;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.*;
@@ -49,11 +56,13 @@ public class HttpClient extends Thread {
     public void flush() {
         if(!connected)
             return;
-        if(byteBufList.size()>0){
-            for(byte[] bytes : byteBufList) {
-                writeAndFlush(bytes);
+        if (byteBufList.size() > 0) {
+            synchronized (byteBufList) {
+                for (byte[] bytes : byteBufList) {
+                    writeAndFlush(bytes);
+                }
+                byteBufList.clear();
             }
-            byteBufList.clear();
         }
     }
     public void sendBack(byte[] msg) {
@@ -65,44 +74,111 @@ public class HttpClient extends Thread {
         }
     }
 
+    public Integer processing = 0;
+
+    public int state = 0;
+
+    public long remoteIndex = 0;
+
     @Override
     public void run() {
+        CloseableHttpClient client = new DefaultHttpClient();
         try {
-            HttpURLConnection urlConnection = (HttpURLConnection) new URL(Client.url+"get?uniqueId="+ uniqueId).openConnection();
-            urlConnection.setRequestMethod("GET");
-            urlConnection.setRequestProperty("Connection", "keep-alive");
-            urlConnection.setReadTimeout(0);
-            urlConnection.connect();
+            /*HttpGet httpGet = new HttpGet(Client.url+"get?uniqueId="+ uniqueId+"&state="+(state++));
+            RequestConfig requestConfig = RequestConfig.custom()
+                    .setConnectTimeout(10000)  //连接超时时间
+                    .setSocketTimeout(10000)   //读取数据超时时间
+                    .build();
+            httpGet.setConfig(requestConfig);*/
+            //System.out.println(httpGet.getURI());
+            JSONObject jsonObject = JSON.parseObject(get(Client.url+"get?uniqueId="+ uniqueId+"&state="+(state++)));//EntityUtils.toString(client.execute(httpGet).getEntity()));
             connected = true;
             flush();
-            while (connected) {
-                try {
-                    Thread.sleep(0);
-                    if(urlConnection.getInputStream().available()>0) {
-                        byte[] b = new byte[urlConnection.getInputStream().available()];
-                        urlConnection.getInputStream().read(b, 0, b.length);
-                        sendBack(b);
+            if(jsonObject.containsKey("bytes")) {
+                while (remoteIndex!=jsonObject.getLong("index")) {
+                    try {
+                        Thread.sleep(0);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
                     }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    connected = false;
+                }
+                sendBack(jsonObject.getBytes("bytes"));
+                remoteIndex++;
+            }
+            while (connected) {
+                Thread.sleep(0);
+                synchronized (processing) {
+                    if (processing < Client.processingCount) {
+                        processing++;
+                        new Thread(() -> {
+                            /*CloseableHttpClient httpClient = new DefaultHttpClient();
+                            HttpGet get = new HttpGet(Client.url + "get?uniqueId=" + uniqueId + "&state=" + state);
+                            JSONObject json;
+                            try {
+                                json = JSON.parseObject(EntityUtils.toString(httpClient.execute(get).getEntity()));
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                                return;
+                            }*/
+                            JSONObject json;
+                            try {
+                                json = JSON.parseObject(get(Client.url + "get?uniqueId=" + uniqueId + "&state=" + state));
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                                return;
+                            }
+                            //System.out.println(json);
+                            new Thread(() -> {
+                                if (json.containsKey("bytes")) {
+                                    while (remoteIndex != json.getLong("index")) {
+                                        try {
+                                            Thread.sleep(0);
+                                        } catch (InterruptedException e) {
+                                            e.printStackTrace();
+                                        }
+                                    }
+                                    sendBack(json.getBytes("bytes"));
+                                    remoteIndex++;
+                                }
+                                synchronized (processing) {
+                                    processing--;
+                                }
+                            }).start();
+                        }).start();
+                    }
                 }
             }
-            urlConnection.getInputStream().close();
+            client.execute(new HttpGet(Client.url+"get?uniqueId="+ uniqueId+"&state="+(state=3)));
         } catch (Exception ex){
             ex.printStackTrace();
         }
     }
 
+    private String get(String urlString) throws IOException {
+        URL url = new URL(urlString);
+        HttpURLConnection con = (HttpURLConnection) url.openConnection();
+        con.setRequestMethod("GET");
+        con.setConnectTimeout(10000);
+        con.setReadTimeout(10000);
+        BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+        String inputLine;
+        StringBuffer content = new StringBuffer();
+        while ((inputLine = in.readLine()) != null) {
+            content.append(inputLine);
+        }
+        in.close();
+        con.disconnect();
+        return content.toString();
+    }
+
     public void writeAndFlush(byte[] bytes) {
         try {
-            CloseableHttpClient client = new DefaultHttpClient();
             synchronized (msgSendIndex) {
                 HttpPost httpPost = new HttpPost(Client.url + "post?uniqueId=" + uniqueId + "&index="+(msgSendIndex++));
                 httpPost.setEntity(new ByteArrayEntity(bytes));
                 new Thread(() -> {
                     try {
-                        client.execute(httpPost);
+                        new DefaultHttpClient().execute(httpPost);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
