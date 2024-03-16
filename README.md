@@ -1,3 +1,6 @@
+本项目转至：[tcp-over-http](https://github.com/mikechenczy/tcp-over-http/)!!!
+
+
 本项目适用场景：利用netlify的http redirect功能，再加上家里宽带下一台ipv6服务器，实现零成本搭建tcp服务。\
 可执行文件使用graalvm native-image编译而成。由于不支持交叉编译，发布列表里没有的就安装java来使用吧\
 原理是将tcp连接包装为http短连接：\
